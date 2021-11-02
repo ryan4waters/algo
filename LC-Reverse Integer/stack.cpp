@@ -1,4 +1,4 @@
-string mystack(int a){
+  string mystack(int a){
   stack<char> tmp;
   int b=abs(a);
   string s=to_string(b);
@@ -9,9 +9,16 @@ string mystack(int a){
     res+=tmp.top();
     tmp.pop();
   }
-  return res;
+
+  int loc=0;
+  for (int i=0;(res[i]-'0')==0;i++){
+    loc++;
+  }
+  string fres=res.substr(loc);
+  return fres;
 }
-int main(){
+
+  int main(){
   int x;
   cin>>x;
   if (x==0){cout<<x;}
