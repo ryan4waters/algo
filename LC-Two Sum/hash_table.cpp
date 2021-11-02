@@ -12,3 +12,9 @@ public:
         return {};
     }
 };
+
+/*
+Time Complexity: O(N), where N is the number of elements in the array. For each element x, we can find target-x by O(1).
+
+Space Complexity: O(N), where N is the number of elements in the array. Mainly the overhead of the hash table.
+*/
