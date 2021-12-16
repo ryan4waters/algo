@@ -18,14 +18,14 @@ public:
         vector<int> savev;
         savev.push_back(temp);
         for (int l=0,r=minutes-1;r<customers.size()-1;) {
-            temp=temp-tmpv[l++]+tmpv[++r];
+            temp=temp-tmpv[l++]+tmpv[++r]; // here i used double pointer, one faster, one slower.
             savev.push_back(temp);
         }
         auto mymark=max_element(savev.begin(),savev.end());
         int vmark=mymark-savev.begin();
         
         int respeace=0;
-        for (int k=vmark;k<vmark+minutes;k++) {
+        for (int k=vmark;k<vmark+minutes;k++) { // skill using.
             if (grumpy[k] == 1) {respeace+=customers[k];}
         }
         int res=resall-resangry+respeace;
