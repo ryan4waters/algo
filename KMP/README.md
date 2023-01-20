@@ -57,7 +57,7 @@ void bfStringMatch(string p, string t)
 
 虽然代码逻辑简单，但不难发现暴力算法慢得像爬一样。它最坏的情况如下图所示：
 
-<img src="string_matching_bf.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/BF.png)
 
 我们很难降低“小任务”的复杂度（因为比较两个等长字符串，真的只能逐个比较字符）。因此，我们考虑到降低“小任务”的次数。如果比较的次数能降到足够低，那么总的复杂度也将会下降很多。
 
@@ -65,7 +65,7 @@ void bfStringMatch(string p, string t)
 
 在暴力算法中，如果从 T[i] 开始的那一趟比较失败了，算法会直接开始尝试从 T[i+1] 开始比较。这种行为，属于典型的 **“没有从之前的错误中学到东西”** 。我们应当注意到，一次失败的匹配，会给我们提供宝贵的信息——如果 T[i : i+len(P)] 匹配是在第 r 个位置失败的，那么从 T[i] 开始的 (r-1) 个连续字符，一定与 P 的前 (r-1) 个字符一模一样！
 
-<img src="prefix.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/prefix.png)
 
 需要实现的任务是“字符串匹配”，而每一次失败都会给我们换来一些信息——能告诉我们，主串的某一个子串等于模式串的某一个前缀。但是这又有什么用呢？
 
@@ -78,13 +78,13 @@ void bfStringMatch(string p, string t)
 * 模式串 P = "abcabd".
 * 和主串从T[0]开始匹配时，在 P[5] 处失配。
 
-<img src="1st_time_match.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/1st_time_match.png)
 
 首先，利用上一节的结论。既然是在 P[5] 失配的，那么说明 T[0:5] 等于 P[0:5]，即"abcab". 现在我们来考虑：从 T[1]、T[2]、T[3] 开始的匹配尝试，有没有可能成功？
 
 从 T[1] 开始肯定没办法成功，因为 T[1] = P[1] = 'b'，和 P[0] 并不相等。从 T[2] 开始也是没戏的，因为 T[2] = P[2] = 'c'，并不等于P[0]. 但是从 T[3] 开始是有可能成功的——至少按照已知的信息，我们推不出矛盾。
 
-<img src="move2try.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/move2try.png)
 
 带着 **“跳过不可能成功的尝试”** 的思想，我们引入了next数组。
 
@@ -92,13 +92,13 @@ void bfStringMatch(string p, string t)
 
 next数组是对于模式串而言的。P 的 next 数组定义为：next[i] 表示 P[0] ~ P[i] 这一个子串，使得 **前k个字符** 恰等于 **后k个字符** 的最大的k. 特别地，k不能取i+1（因为这个子串一共才 i+1 个字符，自己肯定与自己相等，就没有意义了）。
 
-<img src="next_intro.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/next_intro.png)
 
 上图给出了一个例子。P="abcabd"时，next[4]=2，这是因为P[0] ~ P[4] 这个子串是"abcab"，前两个字符与后两个字符相等，因此next[4]取2. 而next[5]=0，是因为"abcabd"找不到前缀与后缀相同，因此只能取0.
 
 如果把模式串视为一把标尺，在主串上移动，那么 Brute-Force 就是每次失配之后只右移一位；改进算法则是每次失配之后，移很多位，跳过那些不可能匹配成功的位置。但是该如何确定要移多少位呢？
 
-<img src="how2movebynext.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/how2movebynext.png)
 
 在 S[0] 尝试匹配，失配于 S[3] <=> P[3] 之后，我们直接把模式串往右移了两位，让 S[3] 对准 P[1]. 接着继续匹配，失配于 S[8] <=> P[6], 接下来我们把 P 往右平移了三位，把 S[8] 对准 P[3]. 此后继续匹配直到成功。
 
@@ -108,7 +108,7 @@ next数组是对于模式串而言的。P 的 next 数组定义为：next[i] 表
 
 可以验证一下上面的匹配例子：P[3]失配后，把P[next[3-1]]也就是P[1]对准了主串刚刚失配的那一位；P[6]失配后，把P[next[6-1]]也就是P[3]对准了主串刚刚失配的那一位。
 
-<img src="ruler_move.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/ruler_move.png)
 
 ### next数组的建立与使用
 
@@ -197,11 +197,11 @@ vector<int> GetMasterStringStartIdx(const string& t, const string& p) {
 
 来分情况讨论。首先，已经知道了 next[x-1]（以下记为now），如果 P[x] 与 P[now] 一样，那最长相等前后缀的长度就可以扩展一位，很明显 next[x] = now + 1. 图示如下。
 
-<img src="quick_solve_next.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_solve_next.png)
 
 刚刚解决了 P[x] = P[now] 的情况。那如果 P[x] 与 P[now] 不一样，又该怎么办？
 
-<img src="x!=now.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/x!%3Dnow.png)
 
 如图。长度为 now 的子串 A 和子串 B 是 P[0]~P[x-1] 中最长的公共前后缀。可惜 A 右边的字符和 B 右边的那个字符不相等，next[x]不能改成 now+1 了。因此，我们应该 **缩短这个now** ，把它改成小一点的值，再来试试 P[x] 是否等于 P[now].
 
@@ -209,7 +209,7 @@ now该缩小到多少呢？显然，我们不想让now缩小太多。因此我�
 
 你应该已经注意到了一个非常强的性质—— **串A和串B是相同的！** B的后缀等于A的后缀！因此，使得A的k-前缀等于B的k-后缀的最大的k，其实就是串A的最长公共前后缀的长度 —— next[now-1]！
 
-<img src="quick_final.png">
+![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_final.png)
 
 来看上面的例子。当P[now]与P[x]不相等的时候，我们需要缩小now——把now变成next[now-1]，直到P[now]=P[x]为止。P[now]=P[x]时，就可以直接向右扩展了。
 
