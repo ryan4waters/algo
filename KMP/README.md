@@ -12,7 +12,7 @@ I supposed that you have read this wiki for times...
 
 ## Brute-Force in
 
-Before learning KMP, BM, RK and other algorithms like these, let's start with the naive method——Brute-Force.
+Before learning KMP, BM, RK and other algorithms like these, let's start with the naive method - Brute-Force.
 ### Implement
 
 Now that we know what the string matching problem is, the simple brute force algorithm should be ready to come out. BF algorithm is both clear and simple in thinking and logic.
@@ -32,24 +32,24 @@ void bfStringMatch(string p, string t)
     for (int i = 0; i <= tlen - plen; ++i) {
         bool flag = true;
         for (int j = 0; j < plen; ++j) {
-            if (p[j] ! = t[i+j]) {
+            if (p[j] ! = t[i + j]) {
                 flag = false;
                 break;
             }
         }
         if (flag) {
-            cout<<i<<" ";
+            cout << i << " ";
         }
     }
 }
 ```
 
-### 暴力求解复杂度
+### Complexity of Brute Force
 
 1. Single small task of "string comparison": the worst possible situation is the following - the only difference between the two strings is the last character. In this case, the pattern string must go through the complete matching string to be able to come to a result, the complexity is $O(len)$.
 2. The worst case that the brute force algorithm may encounter: assume $n = len(P)$, $m = len(T)$. Each small task pays $n$ character comparison costs, and a total of $m - n + 1$ comparisons are required, so the time complexity is $O(n*(m-n+1))$. Considering that the text string is generally much longer than the pattern string, the complexity of the brute force algorithm is $O(nm)$.
 
-## 对暴力算法的改进
+## Improvements to the Brute Force
 
 Although the code logic is simple, it is not difficult to find that the brute force algorithm is as slow as crawling. Its worst case is shown in the figure below:
 
@@ -71,7 +71,7 @@ Some "small tasks" of string comparisons are likely to succeed, and some are not
 
 So, which "small tasks" are impossible to succeed? Let's look at an example. The known information is as follows:
 
-* Pattern string `P = "abcabd"`.
+* Pattern string `P` = `"abcabd"`.
 * When matching the text string starting from `T[0]`, there is a mismatch at `P[5]`.
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/1st_time_match.png)
@@ -84,7 +84,7 @@ Starting from `T[1]` will definitely not succeed, because `T[1]` = `P[1]` = '`b'
 
 With the idea of **"skip impossible attempts"**, we introduce the next array.
 
-## next数组
+## next array
 
 The next array is for the pattern string. The next array of `P` is defined as: `next[i]` represents a substring of `P[0]` ~ `P[i]`, that **the first k characters** are exactly equal to the largest `k` of the **last k characters**. In particular, `k` cannot take `i+1` (because this substring has only `i+1` characters in total, and it must be equal to itself, so it is meaningless).
 
@@ -201,13 +201,13 @@ Just solved the case where P[x] = P[now] . What if P[x] is different with P[now]
 
 As shown in the picture. The substring `A` and `B` of length `now` are the longest common prefix and suffix in `P[0]`~`P[x-1]`. Unfortunately, the character on the right of `A` is not equal to the character on the right of `B`, so `next[x]` cannot be changed to `now+1`. Therefore, we should **shorten this `now`**, change it to a smaller value, and try whether `P[x]` is equal to `P[now]`.
 
-How much should `now` be reduced to? Obviously, we don't want to shrink the `now` too much. Therefore, we decided to make this new `now` as large as possible while maintaining "the now-prefix of `P[0]`~`P[x-1]` is still equal to the now-suffix". For the public prefix and suffix of `P[0]`~`P[x-1]`, the prefix must fall in string `A`, and the suffix must fall in string `B`. In other words: the next `now` should be changed to: make the largest `k` by **A's k-prefix** equal to **B's k-suffix**.
+How much should `now` be reduced to? Obviously, we don't want to shrink the `now` too much. Therefore, we decided to make this new `now` as large as possible while maintaining "the now-prefix of `P[0]` ~ `P[x-1]` is still equal to the now-suffix". For the public prefix and suffix of `P[0]` ~ `P[x-1]`, the prefix must fall in string `A`, and the suffix must fall in string `B`. In other words: the next `now` should be changed to: make the largest `k` by **A's k-prefix** equal to **B's k-suffix**.
 
 You should have noticed a very strong property - **string A and string B are the same!** `B`'s suffix is equal to` A`'s suffix! Therefore, the largest `k` that makes the k-prefix of `A` equal to the k-suffix of `B` is actually the length of the longest common prefix and suffix of string `A` - `next[now-1]`!
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_final.png)
 
-Look at the example above. When `P[now]` is not equal to `P[x]`, we need to shrink now—turn `now` into `next[now-1]` until `P[now]`=`P[x]`. When `P[now]`=`P[x]`, you can directly expand to the right.
+Look at the example above. When `P[now]` is not equal to `P[x]`, we need to shrink now - turn `now` into `next[now-1]` until `P[now]`=`P[x]`. When `P[now]`=`P[x]`, you can directly expand to the right.
 
 The CPP code is  as follows:
 
