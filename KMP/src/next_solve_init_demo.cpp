@@ -7,22 +7,22 @@ using namespace std;
 
 int main()
 {
-    string ss = "abcdabd";
-    vector<int>next(ss.size(), 0);
-    for (int sssr = ss.size() - 1; sssr > 0; --sssr) {
-        for (int sssl = sssr; sssl > 0; --sssl) {
+    string p = "abcdabd";
+    vector<int>next(p.size(), 0);
+    for (int pr = p.size() - 1; pr > 0; --pr) {
+        for (int pl = pr; pl > 0; --pl) {
             int i = 0;
-            for (int pos = sssl; pos <= sssr; ++pos, ++i) {
-                if (ss[i] != ss[pos]) {
+            for (int pos = pl; pos <= pr; ++pos, ++i) {
+                if (p[i] != p[pos]) {
                     break;
                 }
             }
-            if (i == sssr - sssl + 1) {
-                next[sssr] = max(next[sssr], i);
+            if (i == pr - pl + 1) {
+                next[pr] = max(next[pr], i);
             }
         }
     }
-    for_each(next.begin(), next.end(), [](int val){
+    for_each(next.begin(), next.end(), [&](int val){
         cout << val << " ";
     });
     return 0;

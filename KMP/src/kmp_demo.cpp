@@ -8,59 +8,59 @@ using namespace std;
 class KMP
 {
 public:
-    void GetKMPNextArrInit(const string& ss) {
-        next.resize(ss.size(),0);
-        for (int sssr = ss.size() - 1; sssr > 0; --sssr) {
-            for (int sssl = sssr; sssl > 0; --sssl) {
+    void GetKMPNextArrInit(const string& p) {
+        next.resize(p.size(), 0);
+        for (int pr = p.size() - 1; pr > 0; --pr) {
+            for (int pl = pr; pl > 0; --pl) {
                 int i = 0;
-                for (int pos = sssl; pos <= sssr; ++pos, ++i) {
-                    if (ss[i] != ss[pos]) {
+                for (int pos = pl; pos <= pr; ++pos, ++i) {
+                    if (p[i] != p[pos]) {
                         break;
                     }
                 }
-                if (i == sssr - sssl + 1) {
-                    next[sssr] = max(next[sssr],i);
+                if (i == pr - pl + 1) {
+                    next[pr] = max(next[pr], i);
                 }
             }
         }
     }
 
-    void GetKMPNextArr(const string& ss) {
-        this->next.resize(ss.size(), 0);
-        int left = 0, right = 1;
-        while (right < ss.size()) {
-            if (ss[right] == ss[left]) {
-                ++left;
-                next[right] = left;
-                ++right;
-            } else if (left != 0) {
-                left = next[left -1];
+    void GetKMPNextArrQuick(const string& p) {
+        this->next.resize(p.size(), 0);
+        int now = 0, x = 1;
+        while (x < p.size()) {
+            if (p[x] == p[now]) {
+                ++now;
+                next[x] = now;
+                ++x;
+            } else if (now != 0) {
+                now = next[now -1];
             } else {
-                next[right] = 0;
-                ++right;
+                next[x] = 0;
+                ++x;
                 
             }
         }
     }
 
-    vector<int> GetMasterStringStartIdx(const string& ms, const string& ss) {
-        GetKMPNextArr(ss);
-        int midx = 0, sidx = 0;
+    vector<int> GetMasterStringStartIdx(const string& t, const string& p) {
+        GetKMPNextArrQuick(p);
+        int tidx = 0, pidx = 0;
         vector<int>ret;
 
-        while (midx < ms.size()) {
-            if (ms[midx] == ss[sidx]) {
-                ++midx;
-                ++sidx;
-            } else if (sidx != 0) {
-                sidx = next[sidx - 1];
+        while (tidx < t.size()) {
+            if (t[tidx] == p[pidx]) {
+                ++tidx;
+                ++pidx;
+            } else if (pidx != 0) {
+                pidx = next[pidx - 1];
             } else {
-                ++midx;
+                ++tidx;
             }
 
-            if (sidx == ss.size()) {
-                ret.emplace_back(midx - sidx);
-                sidx = next[sidx - 1];
+            if (pidx == p.size()) {
+                ret.emplace_back(tidx - pidx);
+                pidx = next[pidx - 1];
             }
         }
         return ret;
@@ -71,11 +71,11 @@ private:
 
 int main()
 {
-    string ms = "abcdabdcdaabcda";
-    string ss = "abc";
+    string t = "abcdabdcdaabcda";
+    string p = "abc";
     KMP mykmp;
-    vector<int>v = mykmp.GetMasterStringStartIdx(ms, ss);
-    for_each(v.begin(), v.end(), [](int val) {
+    vector<int>v = mykmp.GetMasterStringStartIdx(t, p);
+    for_each(v.begin(), v.end(), [&](int val) {
         cout << val << " ";
     }); cout << endl;
 

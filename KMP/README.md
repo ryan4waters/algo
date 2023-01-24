@@ -1,29 +1,25 @@
-# 字符串匹配算法
+# KMP
 
-## 字符串匹配问题是什么
+## Exact matching: what's the problem?
 
-*算法都是来解决问题的！看到一类算法首先要知道它是用来解决什么问题，如果不清楚这一点，那这个算法对于你可能没有实际价值。*
-* Q：what is the Exact String Matching problem?
-* A：给出一个P（pattern string）和一个T（text string），在T中找出所有匹配的P。
-* E.G.：假设P == "aba"，T == "bbabaxababay"，则P在T中出现的位置（index）分别是2、6和8。其中6和8有重叠。
+Given a string `P` called the pattern and a longer string `T` called the text, the exact  matching problem is to find all occurrences, if any, of pattern `P` in text `T`.  For example, if `P` = `aba` and `T` = `bbabaxababay` then `P` occurs in `T` starting at  locations `3`, `7`, and `9`. Note that two occurrences of `P` may overlap, as illustrated by the  occurrences of `P` at locations `7` and `9`. —— via *Algorithms on Strings, Trees,  and Sequences*
 
-## KMP简介
+## Introduce
 
-[维基百科](https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm)
+[wikipedia](https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm)
 
-知道你也不会看...还是直接进入正题吧...
+I supposed that you have read this wiki for times...
 
-## 纯暴力算法
+## Brute-Force in
 
-在介绍KMP、BM、RK等算法之前，首先从简单的、原始的暴力算法（Brute-Force）讲起。
-### 实现代码
+Before learning KMP, BM, RK and other algorithms like these, let's start with the naive method——Brute-Force.
+### Implement
 
-既然已经知道字符串匹配问题是什么，那其实质朴的暴力算法应该就呼之欲出了。
+Now that we know what the string matching problem is, the simple brute force algorithm should be ready to come out. BF algorithm is both clear and simple in thinking and logic.
 
-* 枚举i = 0,1,2,3,...,len(T) - len(P)。
-* 比较T[i : i + len(P)]与P是否相等，如果一致，则找到一个匹配。
+* enumerate `i` = `0,1,2,3,...,len(T) - len(P)`.
+* Compare whether `T[i : i + len(P)]` is equal to `P`, and if they are consistent, one match found.
 
-该算法思路清楚，逻辑简单。
 ```
 //CPP
 void bfStringMatch(string p, string t)
@@ -50,79 +46,79 @@ void bfStringMatch(string p, string t)
 
 ### 暴力求解复杂度
 
-1. 单次进行“字符串比较”小任务：最坏可能出现以下情况——两个字符串唯一的差别在最后一个字符，在此种情况下，模式串必须走过完整的匹配串，才能得出结果，复杂度为O(len)。
-2. 暴力算法可能遭遇的最坏情况：记`n = plen`,`m = tlen`。每次小任务付出`n`次字符比较代价，总共需要比较`m - n + 1`次，因此时间复杂度为O(n*(m-n+1))。考虑到主串一般比模式串长很多，所以暴力算法的复杂度为O(nm)。
+1. Single small task of "string comparison": the worst possible situation is the following - the only difference between the two strings is the last character. In this case, the pattern string must go through the complete matching string to be able to come to a result, the complexity is $O(len)$.
+2. The worst case that the brute force algorithm may encounter: assume $n = len(P)$, $m = len(T)$. Each small task pays $n$ character comparison costs, and a total of $m - n + 1$ comparisons are required, so the time complexity is $O(n*(m-n+1))$. Considering that the text string is generally much longer than the pattern string, the complexity of the brute force algorithm is $O(nm)$.
 
 ## 对暴力算法的改进
 
-虽然代码逻辑简单，但不难发现暴力算法慢得像爬一样。它最坏的情况如下图所示：
+Although the code logic is simple, it is not difficult to find that the brute force algorithm is as slow as crawling. Its worst case is shown in the figure below:
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/BF.png)
 
-我们很难降低“小任务”的复杂度（因为比较两个等长字符串，真的只能逐个比较字符）。因此，我们考虑到降低“小任务”的次数。如果比较的次数能降到足够低，那么总的复杂度也将会下降很多。
+It is difficult for us to reduce the complexity of "small tasks" (because comparing two strings of equal length, you can only compare characters one by one). Therefore, we consider reducing the number of "small tasks". If the number of comparisons can be reduced enough, the overall complexity will also reduce a lot.
 
-要优化一个算法，首先要回答的问题是 **“我手上有什么信息？”** 我们手上的信息是否足够、是否有效，决定了我们能把算法优化到何种程度。**请记住：尽可能利用残余的信息，是KMP算法的思想所在。**
+To optimize an algorithm, the first question to answer is **"What information do I have?"** Whether the information we have is sufficient and effective determines how far we can optimize the algorithm. **Please remember: It is the idea of the KMP algorithm to make use of the residual information as much as possible. **
 
-在暴力算法中，如果从 T[i] 开始的那一趟比较失败了，算法会直接开始尝试从 T[i+1] 开始比较。这种行为，属于典型的 **“没有从之前的错误中学到东西”** 。我们应当注意到，一次失败的匹配，会给我们提供宝贵的信息——如果 T[i : i+len(P)] 匹配是在第 r 个位置失败的，那么从 T[i] 开始的 (r-1) 个连续字符，一定与 P 的前 (r-1) 个字符一模一样！
+In the brute force algorithm, if the comparison from `T[i]` fails, the algorithm will directly start to try to compare from `T[i+1]`. This kind of behavior is a typical **"not learning from previous mistakes"**. We should note that a failed match will provide us with valuable information - if the match of `T[i : i+len(P)]` fails at the position of `r`, then starting from `T[i]`, there must be `( r-1)` consecutive characters  exactly the same as the first `(r-1)` characters of `P`!
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/prefix.png)
 
-需要实现的任务是“字符串匹配”，而每一次失败都会给我们换来一些信息——能告诉我们，主串的某一个子串等于模式串的某一个前缀。但是这又有什么用呢？
+The task that needs to be realized is "string matching", and every failure will give us some information in exchange - it can tell us that a certain substring of the text string is equal to a certain prefix of the pattern string. But what's the use?
 
-### 跳过不可能成功的字符串比较
+### Skip impossible string comparisons
 
-有些趟字符串比较是有可能会成功的,有些则毫无可能。我们刚刚提到过，优化 Brute-Force 的目标是“尽量减少比较的趟数”，而如果我们跳过那些绝不可能成功的字符串比较，则可以希望复杂度降低到能接受的范围。
+Some "small tasks" of string comparisons are likely to succeed, and some are not. We just mentioned that the goal of optimizing Brute-Force is to "minimize the number of 'small tasks'", and if we skip those "small tasks" that are never likely to succeed, we can hope that the complexity will be reduced to an acceptable range.
 
-那么，哪些字符串比较是不可能成功的？来看一个例子。已知信息如下：
+So, which "small tasks" are impossible to succeed? Let's look at an example. The known information is as follows:
 
-* 模式串 P = "abcabd".
-* 和主串从T[0]开始匹配时，在 P[5] 处失配。
+* Pattern string `P = "abcabd"`.
+* When matching the text string starting from `T[0]`, there is a mismatch at `P[5]`.
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/1st_time_match.png)
 
-首先，利用上一节的结论。既然是在 P[5] 失配的，那么说明 T[0:5] 等于 P[0:5]，即"abcab". 现在我们来考虑：从 T[1]、T[2]、T[3] 开始的匹配尝试，有没有可能成功？
+First, use the conclusions from the previous section. Since it is mismatched at `P[5]`, it means that `T[0:5]` is equal to `P[0:5]`, which is `"abcab"`. Now let's consider: from `T[1]`, `T[2]`, `T[3]` The initial match attempt, is there any chance of success?
 
-从 T[1] 开始肯定没办法成功，因为 T[1] = P[1] = 'b'，和 P[0] 并不相等。从 T[2] 开始也是没戏的，因为 T[2] = P[2] = 'c'，并不等于P[0]. 但是从 T[3] 开始是有可能成功的——至少按照已知的信息，我们推不出矛盾。
+Starting from `T[1]` will definitely not succeed, because `T[1]` = `P[1]` = '`b'`, which is not equal to `P[0]`. Starting from `T[2]` is also useless, because `T[2]` = `P[2]` = `'c'`, which is not equal to `P[0]`. But starting from `T[3]` is possible - at least according to the established known information, we can not deduce the contradiction.
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/move2try.png)
 
-带着 **“跳过不可能成功的尝试”** 的思想，我们引入了next数组。
+With the idea of **"skip impossible attempts"**, we introduce the next array.
 
 ## next数组
 
-next数组是对于模式串而言的。P 的 next 数组定义为：next[i] 表示 P[0] ~ P[i] 这一个子串，使得 **前k个字符** 恰等于 **后k个字符** 的最大的k. 特别地，k不能取i+1（因为这个子串一共才 i+1 个字符，自己肯定与自己相等，就没有意义了）。
+The next array is for the pattern string. The next array of `P` is defined as: `next[i]` represents a substring of `P[0]` ~ `P[i]`, that **the first k characters** are exactly equal to the largest `k` of the **last k characters**. In particular, `k` cannot take `i+1` (because this substring has only `i+1` characters in total, and it must be equal to itself, so it is meaningless).
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/next_intro.png)
 
-上图给出了一个例子。P="abcabd"时，next[4]=2，这是因为P[0] ~ P[4] 这个子串是"abcab"，前两个字符与后两个字符相等，因此next[4]取2. 而next[5]=0，是因为"abcabd"找不到前缀与后缀相同，因此只能取0.
+The figure above gives an example. When `P`=`"abcabd"`, `next[4]`=`2`, because the substring `P[0]` ~ `P[4]` is `"abcab"`, the first two characters are equal to the last two characters, so `next[4]` take 2. And `next[5]`=`0`, because `"abcabd"` can't find the same prefix and suffix, so it can only take `0`.
 
-如果把模式串视为一把标尺，在主串上移动，那么 Brute-Force 就是每次失配之后只右移一位；改进算法则是每次失配之后，移很多位，跳过那些不可能匹配成功的位置。但是该如何确定要移多少位呢？
+If the pattern string is regarded as a **ruler** and moves on the text string, then Brute-Force only shifts `1` to the right after each mismatch; the improved algorithm is to move many indexes after each mismatch, skipping those that are not possible locations for a successful match. But how do you determine how many indexes to shift?
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/how2movebynext.png)
 
-在 S[0] 尝试匹配，失配于 S[3] <=> P[3] 之后，我们直接把模式串往右移了两位，让 S[3] 对准 P[1]. 接着继续匹配，失配于 S[8] <=> P[6], 接下来我们把 P 往右平移了三位，把 S[8] 对准 P[3]. 此后继续匹配直到成功。
+After `S[0]` tries to match, and the mismatch is `S[3]` <=> `P[3]`, we directly shift the pattern string to the right by `2`, so that `S[3]` is aligned with `P[1]`. Then continue matching, the mismatch is `S[8]` <=> `P[6]`, then we shift `P` to the right by `3`, and align `S[8]` with `P[3]`. Then continue to match until it succeeds.
 
-我们应该如何移动这把标尺？很明显，如图中箭头所示，旧的后缀要与新的前缀一致（如果不一致，那就肯定没法匹配上了）！
+How should we move this ruler? Obviously, as shown by the arrow in the figure, the old suffix must be consistent with the new prefix (if not, it will definitely not match)!j
 
-回忆next数组的性质：P[0] 到 P[i] 这一段子串中，前next[i]个字符与后next[i]个字符一模一样。既然如此，如果失配在 P[r], 那么P[0]~P[r-1]这一段里面，前next[r-1]个字符恰好和后next[r-1]个字符相等——也就是说，我们可以拿长度为 next[r-1] 的那一段前缀，来顶替当前后缀的位置，让匹配继续下去！
+Recall the property of the next array: in the substring from `P[0]` to `P[i]`, the first `next[i]` characters are exactly the same as the last `next[i]` characters. That being the case, if the mismatch is in `P[r]`, then in the section `P[0]`~`P[r-1]`, the first `next[r-1]` characters are exactly equal to the last `next[r-1]` characters - That is to say, we can use the prefix whose length is `next[r-1]` to replace the position of the current suffix and let the matching continue!
 
-可以验证一下上面的匹配例子：P[3]失配后，把P[next[3-1]]也就是P[1]对准了主串刚刚失配的那一位；P[6]失配后，把P[next[6-1]]也就是P[3]对准了主串刚刚失配的那一位。
+You can verify the above matching example: after `P[3]` is mismatched, align `P[next[3-1]]`(`P[1]`), with the index that the text string just mismatched; After `P[6]` is mismatched, align `P[next[6-1]]`(`P[3]`), with the index that the text string just mismatched.
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/ruler_move.png)
 
-### next数组的建立与使用
+### The create and use of next array
 
-了解了利用next数组加速字符串匹配的原理，我们接下来代码实现之。分为两个部分：
-1. 建立next数组
-2. 利用next数组进行匹配。
+After understanding the principle of using the next array to speed up string matching, let's implement it in the next code. I divided it into two parts:
 
-首先是建立next数组。我们暂且用最朴素的做法，以后再回来优化：
+1. Create next array
+2. Use the next array for matching
+
+The first is to create the next array. Let's use the simplest method first, and come back to optimize it later:
 
 ```
 //CPP
-vector<int>next;
-void GetKMPNextArr(const string& p) {
-    next.resize(p.size(),0);
+void GetKMPNextArrInit(const string& p) {
+    next.resize(p.size(), 0);
     for (int pr = p.size() - 1; pr > 0; --pr) {
         for (int pl = pr; pl > 0; --pl) {
             int i = 0;
@@ -132,14 +128,14 @@ void GetKMPNextArr(const string& p) {
                 }
             }
             if (i == pr - pl + 1) {
-                next[pr] = max(next[pr],i);
+                next[pr] = max(next[pr], i);
             }
         }
     }
 }
 ```
 
-使用python能够更加简洁：
+You might be furious because of triple-for loop used. "Damn, the reason why I learn KMP is to not use such many fors". However, python can be more concise：
 
 ```
 #python
@@ -152,9 +148,9 @@ def getNext(x):
 next = [getNext(x) for x in range(len(p))]
 ```
 
-如上图代码所示，直接根据next数组的定义来建立next数组。不难发现它的复杂度是O(n^2^)的。
+As shown in the code above, the next array is created directly according to the definition of the next array. It is not difficult to find that its complexity is $O(n^2)$.
 
-接下来，实现利用next数组加速字符串匹配。代码如下：
+Next, realize the use of the next array to speed up string matching. code show as below:
 
 ```
 vector<int> GetMasterStringStartIdx(const string& t, const string& p) {
@@ -179,59 +175,59 @@ vector<int> GetMasterStringStartIdx(const string& t, const string& p) {
 }
 ```
 
-如何分析这个字符串匹配的复杂度呢？乍一看，pidx值可能不停地变成next[pidx-1]，代价会很高；但我们使用摊还分析，显然pidx值一共顶多自增len(S)次，因此pidx值减少的次数不会高于len(T)次。由此，复杂度是可以接受的，不难分析出整个匹配算法的时间复杂度：O(m+n)。
+How to analyze the complexity of this string matching? At first glance, the value of  `pidx` may keep changing to `next[pidx-1]`, and the cost will be very high; but we use the amortized analysis, it is clear that the value of `pidx` will increase at most $len(S)$ times, so the value of `pidx` will decrease The number of times will not be higher than $len(T)$ times. Therefore, the complexity is acceptable, and it is not difficult to analyze the time complexity of the entire matching algorithm: $O(m+n)$.
 
-### 快速求解next数组
+### Quickly build the next array
 
-终于来到了我们最后一个问题——如何快速构建next数组。
+Finally we come to our last question - how to quickly build the next array.
 
-首先说一句：快速构建next数组，是KMP算法的精髓所在，核心思想是 **“P自己与自己做匹配”** 。
+First: Quickly constructing the next array is the essence of the KMP algorithm. The core idea is **"P matches itself with itself"**.
 
-为什么这样说呢？回顾next数组的完整定义：
+Why do I say this way? Review the complete definition of the next array:
 
-* 定义 “k-前缀” 为一个字符串的前 k 个字符； “k-后缀” 为一个字符串的后 k 个字符。k 必须小于字符串长度。
+* Define "k-prefix" as the first number of `k` characters of a string; "k-suffix" as the last number of `k` characters of a string. `k` must be less than the string length.
 
-* next[x] 定义为： P[0]~P[x] 这一段字符串，使得 **k-前缀恰等于k-后缀** 的最大的k.
+* `next[x]` is defined as: a string of `P[0]`~`P[x]`, to make the largest `k` by **k-prefix equal to k-suffix**.
 
-这个定义中，不知不觉地就包含了一个匹配——前缀和后缀相等。接下来，我们考虑采用递推的方式求出next数组。如果next[0], next[1], ... next[x-1]均已知，那么如何求出 next[x] 呢？
+In this definition, one match is implicitly included—prefix and suffix are equal. Next, we consider recursively finding the next array. If `next[0]`, `next[1]`,..., `next[x-1]` are all known, how to find `next[x]`?
 
-来分情况讨论。首先，已经知道了 next[x-1]（以下记为now），如果 P[x] 与 P[now] 一样，那最长相等前后缀的长度就可以扩展一位，很明显 next[x] = now + 1. 图示如下。
+Let's discuss the situation. First of all, we already know `next[x-1]` (hereinafter referred to as `now`), if `P[x]` is the same as `P[now]`, then the length of the longest equal prefix and suffix can be extended by one, obviously `next[x]` = `now` + `1`. The diagram is as follows.
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_solve_next.png)
 
-刚刚解决了 P[x] = P[now] 的情况。那如果 P[x] 与 P[now] 不一样，又该怎么办？
+Just solved the case where P[x] = P[now] . What if P[x] is different with P[now]?
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/x!%3Dnow.png)
 
-如图。长度为 now 的子串 A 和子串 B 是 P[0]~P[x-1] 中最长的公共前后缀。可惜 A 右边的字符和 B 右边的那个字符不相等，next[x]不能改成 now+1 了。因此，我们应该 **缩短这个now** ，把它改成小一点的值，再来试试 P[x] 是否等于 P[now].
+As shown in the picture. The substring `A` and `B` of length `now` are the longest common prefix and suffix in `P[0]`~`P[x-1]`. Unfortunately, the character on the right of `A` is not equal to the character on the right of `B`, so `next[x]` cannot be changed to `now+1`. Therefore, we should **shorten this `now`**, change it to a smaller value, and try whether `P[x]` is equal to `P[now]`.
 
-now该缩小到多少呢？显然，我们不想让now缩小太多。因此我们决定，在保持“P[0]~P[x-1]的now-前缀仍然等于now-后缀”的前提下，让这个新的now尽可能大一点。 P[0]~P[x-1] 的公共前后缀，前缀一定落在串A里面、后缀一定落在串B里面。换句话讲：接下来now应该改成：使得 **A的k-前缀** 等于 **B的k-后缀** 的最大的k.
+How much should `now` be reduced to? Obviously, we don't want to shrink the `now` too much. Therefore, we decided to make this new `now` as large as possible while maintaining "the now-prefix of `P[0]`~`P[x-1]` is still equal to the now-suffix". For the public prefix and suffix of `P[0]`~`P[x-1]`, the prefix must fall in string `A`, and the suffix must fall in string `B`. In other words: the next `now` should be changed to: make the largest `k` by **A's k-prefix** equal to **B's k-suffix**.
 
-你应该已经注意到了一个非常强的性质—— **串A和串B是相同的！** B的后缀等于A的后缀！因此，使得A的k-前缀等于B的k-后缀的最大的k，其实就是串A的最长公共前后缀的长度 —— next[now-1]！
+You should have noticed a very strong property - **string A and string B are the same!** `B`'s suffix is equal to` A`'s suffix! Therefore, the largest `k` that makes the k-prefix of `A` equal to the k-suffix of `B` is actually the length of the longest common prefix and suffix of string `A` - `next[now-1]`!
 
 ![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_final.png)
 
-来看上面的例子。当P[now]与P[x]不相等的时候，我们需要缩小now——把now变成next[now-1]，直到P[now]=P[x]为止。P[now]=P[x]时，就可以直接向右扩展了。
+Look at the example above. When `P[now]` is not equal to `P[x]`, we need to shrink now—turn `now` into `next[now-1]` until `P[now]`=`P[x]`. When `P[now]`=`P[x]`, you can directly expand to the right.
 
-CPP代码实现如下：
+The CPP code is  as follows:
 
 ```
-void GetKMPNextArr(const string& p) {
-    next.resize(p.size(), 0);
-    int left = 0, right = 1;
-    while (right < p.size()) {
-        if (p[right] == p[left]) {
-            ++left;
-            next[right] = left;
-            ++right;
-        } else if (left != 0) {
-            left = next[left -1];
-        } else {
-            next[right] = 0;
-            ++right;
-        }
-    }
+void GetKMPNextArrQuick(const string& p) {
+	this->next.resize(p.size(), 0);
+	int now = 0, x = 1;
+	while (x < p.size()) {
+		if (p[x] == p[now]) {
+			++now;
+			next[x] = now;
+			++x;
+		} else if (now != 0) {
+			now = next[now -1];
+		} else {
+			next[x] = 0;
+			++x;
+		}
+	}
 }
 ```
 
-不难证明构建next数组的时间复杂度是O(m)的。至此，我们以O(m+n)的时间复杂度，实现了构建next数组、利用next数组进行字符串匹配。
+It is not difficult to prove that the time complexity of constructing the next array is $O(m)$. So far, with the time complexity of $O(m+n)$, we have realized building the next array and using the next array for string matching.
