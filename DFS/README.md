@@ -95,12 +95,14 @@ When the `candidates` array contains duplicate elements (Each element of the `ca
 * For `startidx` and `i`.
 Combination problem for path exploration at a node, **start position `startidx` (generally `startidx`, `startidx` is required for single array combinations,  but not required for multi-array combinations, see [17. Letter combinations](https://leetcode.com/problems/letter-combinations-of-a-phone-number/)) == recursively pass `startidx == i + 1` (any element is used at most once) or `i` (any element is used an unlimited number of times, and `i` is pruned at the end of the loop condition)**. Specifically, when the `candidates` array does not contain duplicate elements and the `tmp` array has no limit on the number of times the elements of the candidates array can be used, the `startidx` passed in recursively should be `i` so that the loop starts from `startidx` after entering recursion, not from `0`, for the following reasons.
 
-<img src="difference.png">
+![image](https://github.com/ryan4waters/algo/blob/main/DFS/figures/1startidx.png)
 
-The case where any element is used at most once (`startidx==i+1`) is not repeated, for the same reason.
+The case where any element is used at most once (`startidx == i + 1`) is not repeated, for the same reason.
 
 * For K.
-The value of K is given or not directly affects pruning (the for-loop termination condition, i.e. the range of `i`): `;i<candidates.size()-k+tmp.size()+1;`
+The value of K is given or not directly affects pruning (the for-loop termination condition, i.e. the range of `i`): 
+<div align = "center">; i < candidates.size() - k + tmp.size() + 1;</div>
+
 But pruning of the i range operation does not affect the end condition. If [39. Combination Sum](https://leetcode.com/problems/combination-sum/) and [40. Combination Sum II](https://leetcode.com/problems/combination-sum-ii/) add the constraint `k`, don't forget to fix the end condition.
 
 ## Permutation
@@ -253,7 +255,7 @@ bool dfs() {
 bool isValid(){
     for (int i = 0; i < 9; i) {if (board[row][i] == val) return false;} // row
     for (int j = 0; j < 9; j) {if (board[j][col] == val) return false;} // column
-    for (int sr=row/3*3;sr< row/3*3+3;++sr) { // 3x3块
+    for (int sr = row / 3 * 3; sr< row / 3 * 3 + 3; ++sr) { // 3x3 blocks
     	for (int sc = col / 3 * 3; sc < col / 3 * 3 + 3; ++sc) {
     		if(board[sr][sc] == val) return false;
     	}
