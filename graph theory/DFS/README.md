@@ -95,7 +95,7 @@ When the `candidates` array contains duplicate elements (Each element of the `ca
 * For `startidx` and `i`.
 Combination problem for path exploration at a node, **start position `startidx` (generally `startidx`, `startidx` is required for single array combinations,  but not required for multi-array combinations, see [17. Letter combinations](https://leetcode.com/problems/letter-combinations-of-a-phone-number/)) == recursively pass `startidx == i + 1` (any element is used at most once) or `i` (any element is used an unlimited number of times, and `i` is pruned at the end of the loop condition)**. Specifically, when the `candidates` array does not contain duplicate elements and the `tmp` array has no limit on the number of times the elements of the candidates array can be used, the `startidx` passed in recursively should be `i` so that the loop starts from `startidx` after entering recursion, not from `0`, for the following reasons.
 
-![image](https://github.com/ryan4waters/algo/blob/main/DFS/figures/startidx.png)
+![image](https://github.com/ryan4waters/algo/blob/main/graph%20theory/DFS/figures/startidx.png)
 
 The case where any element is used at most once (`startidx == i + 1`) is not repeated, for the same reason.
 
