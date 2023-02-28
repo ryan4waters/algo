@@ -53,7 +53,7 @@ void bfStringMatch(string p, string t)
 
 Although the code logic is simple, it is not difficult to find that the brute force algorithm is as slow as crawling. Its worst case is shown in the figure below:
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/BF.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/BF.png)
 
 It is difficult for us to reduce the complexity of "small tasks" (because comparing two strings of equal length, you can only compare characters one by one). Therefore, we consider reducing the number of "small tasks". If the number of comparisons can be reduced enough, the overall complexity will also reduce a lot.
 
@@ -61,7 +61,7 @@ To optimize an algorithm, the first question to answer is **"What information do
 
 In the brute force algorithm, if the comparison from `T[i]` fails, the algorithm will directly start to try to compare from `T[i+1]`. This kind of behavior is a typical **"not learning from previous mistakes"**. We should note that a failed match will provide us with valuable information - if the match of `T[i : i+len(P)]` fails at the position of `r`, then starting from `T[i]`, there must be `( r-1)` consecutive characters  exactly the same as the first `(r-1)` characters of `P`!
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/prefix.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/prefix.png)
 
 The task that needs to be realized is "string matching", and every failure will give us some information in exchange - it can tell us that a certain substring of the text string is equal to a certain prefix of the pattern string. But what's the use?
 
@@ -74,13 +74,13 @@ So, which "small tasks" are impossible to succeed? Let's look at an example. The
 * Pattern string `P` = `"abcabd"`.
 * When matching the text string starting from `T[0]`, there is a mismatch at `P[5]`.
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/1st_time_match.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/1st_time_match.png)
 
 First, use the conclusions from the previous section. Since it is mismatched at `P[5]`, it means that `T[0:5]` is equal to `P[0:5]`, which is `"abcab"`. Now let's consider: from `T[1]`, `T[2]`, `T[3]` The initial match attempt, is there any chance of success?
 
 Starting from `T[1]` will definitely not succeed, because `T[1]` = `P[1]` = '`b'`, which is not equal to `P[0]`. Starting from `T[2]` is also useless, because `T[2]` = `P[2]` = `'c'`, which is not equal to `P[0]`. But starting from `T[3]` is possible - at least according to the established known information, we can not deduce the contradiction.
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/move2try.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/move2try.png)
 
 With the idea of **"skip impossible attempts"**, we introduce the next array.
 
@@ -88,13 +88,13 @@ With the idea of **"skip impossible attempts"**, we introduce the next array.
 
 The next array is for the pattern string. The next array of `P` is defined as: `next[i]` represents a substring of `P[0]` ~ `P[i]`, that **the first k characters** are exactly equal to the largest `k` of the **last k characters**. In particular, `k` cannot take `i+1` (because this substring has only `i+1` characters in total, and it must be equal to itself, so it is meaningless).
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/next_intro.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/next_intro.png)
 
 The figure above gives an example. When `P`=`"abcabd"`, `next[4]`=`2`, because the substring `P[0]` ~ `P[4]` is `"abcab"`, the first two characters are equal to the last two characters, so `next[4]` take 2. And `next[5]`=`0`, because `"abcabd"` can't find the same prefix and suffix, so it can only take `0`.
 
 If the pattern string is regarded as a **ruler** and moves on the text string, then Brute-Force only shifts `1` to the right after each mismatch; the improved algorithm is to move many indexes after each mismatch, skipping those that are not possible locations for a successful match. But how do you determine how many indexes to shift?
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/how2movebynext.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/how2movebynext.png)
 
 After `S[0]` tries to match, and the mismatch is `S[3]` <=> `P[3]`, we directly shift the pattern string to the right by `2`, so that `S[3]` is aligned with `P[1]`. Then continue matching, the mismatch is `S[8]` <=> `P[6]`, then we shift `P` to the right by `3`, and align `S[8]` with `P[3]`. Then continue to match until it succeeds.
 
@@ -104,7 +104,7 @@ Recall the property of the next array: in the substring from `P[0]` to `P[i]`, t
 
 You can verify the above matching example: after `P[3]` is mismatched, align `P[next[3-1]]`(`P[1]`), with the index that the text string just mismatched; After `P[6]` is mismatched, align `P[next[6-1]]`(`P[3]`), with the index that the text string just mismatched.
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/ruler_move.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/ruler_move.png)
 
 ### The create and use of next array
 
@@ -193,11 +193,11 @@ In this definition, one match is implicitly included—prefix and suffix are equ
 
 Let's discuss the situation. First of all, we already know `next[x-1]` (hereinafter referred to as `now`), if `P[x]` is the same as `P[now]`, then the length of the longest equal prefix and suffix can be extended by one, obviously `next[x]` = `now` + `1`. The diagram is as follows.
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_solve_next.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/quick_solve_next.png)
 
 Just solved the case where P[x] = P[now] . What if P[x] is different with P[now]?
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/x!%3Dnow.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/x!%3Dnow.png)
 
 As shown in the picture. The substring `A` and `B` of length `now` are the longest common prefix and suffix in `P[0]`~`P[x-1]`. Unfortunately, the character on the right of `A` is not equal to the character on the right of `B`, so `next[x]` cannot be changed to `now+1`. Therefore, we should **shorten this `now`**, change it to a smaller value, and try whether `P[x]` is equal to `P[now]`.
 
@@ -205,7 +205,7 @@ How much should `now` be reduced to? Obviously, we don't want to shrink the `now
 
 You should have noticed a very strong property - **string A and string B are the same!** `B`'s suffix is equal to` A`'s suffix! Therefore, the largest `k` that makes the k-prefix of `A` equal to the k-suffix of `B` is actually the length of the longest common prefix and suffix of string `A` - `next[now-1]`!
 
-![image](https://github.com/ryan4waters/algo/blob/main/KMP/figures/quick_final.png)
+![image](https://github.com/ryan4waters/algo/blob/main/string/KMP/figures/quick_final.png)
 
 Look at the example above. When `P[now]` is not equal to `P[x]`, we need to shrink now - turn `now` into `next[now-1]` until `P[now]`=`P[x]`. When `P[now]`=`P[x]`, you can directly expand to the right.
 
