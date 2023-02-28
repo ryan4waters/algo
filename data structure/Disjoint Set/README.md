@@ -13,29 +13,37 @@ This is actually a very practical question. We can build a model that divides al
 
 The important idea of Disjoint Set is to use an element in the set to represent this set. I have seen an interesting metaphor that compares the set to a gang, and the representative element is the gang boss. Next, let's use this metaphor to see how Disjoint Set works.
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/intro.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/intro.png">
+</div>
 
 In the beginning, all the gangsters fought on their own. Every gang boss is naturally themselve. (For a set with only one element, the representative element is naturally the only element)
 
 Now No. 1 and No. 3 are fighting, assuming that No. 1 wins (here it is not important who wins), then No. 3 will recognize No. 1 as the gang boss (merge the sets that No. 1 and No. 3 belong to, and No. 1 is the representative element).
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/3to1.png)
+</div>
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/3to1.png"> </div>
 
 Now No. 2 wants to fight with No. 3 (merge the sets that No. 3 and No. 2 belong to), but No. 3 says, "don't fight with me, I'll call my boss to f**k you" (merge representative elements). It might as well assume that No. 1 won again this time, then No. 2 also recognizes No. 1 as the boss.
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/2to1.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/2to1.png"> </div>
 
 Now let's assume that the No. 4, No. 5 and No. 6 also carried out some gang mergers, and the situation in the streets becomes as follows:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/56to4.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/56to4.png"> </div>
 
 Now suppose that No. 2 wants to fight with No. 6, just like what I just said, they call their boss No. 1 and No. 4 to come out and fight (it's never easy being the boss). After No. 1 wins, No. 4 recognizes No. 1 as the gang boss, and of course his subordinates also surrendered.
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/4to1.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/4to1.png"> </div>
 
 Well, the metaphor is over. If you have a little graph theory foundation, I believe you have already noticed that this is a **tree** structure. To find the representative element of the set, you only need to find the parent node layer by layer (the circle pointed by the arrow in the figure). Go to the root node of the tree (the orange circle in the figure). The parent node of the root node is itself. We can draw it directly as a tree:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/tree.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/tree.png"> </div>
 
 In this way, we can write the simplest version code of Disjoint Set.
 
@@ -81,25 +89,30 @@ The merging operation is also very simple, first find the representative element
 
 The simplest version's efficiency is quite low. For example, consider the following scenario:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp1.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp1.png"> </div>
 
 Now we want to merge(2,3), so we find 1 from 2, fa[1]=3, so it becomes like this:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp2.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp2.png"> </div>
 
 Then we find another element 4, and need to execute merge(2,4):
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp3.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp3.png"> </div>
 
 Find 1 from 2, then find 3, then fa[3]=4, so it becomes like this:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp4.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp4.png"> </div>
 
 You should have a feeling that this may form a long **chain** . As the chain gets longer, it will become more and more difficult for us to find the root node from the bottom.
 
 How to solve it? We can use **path compression** . Since we only care about the **root node** corresponding to an element, we hope that the path from each element to the root node is as short as possible, preferably only one step, like this:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp5.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/cp5.png"> </div>
 
 In fact, this is also very easy to achieve. As long as we **set the parent node of each node along the way as the root node** during the query process. We can save a lot of trouble the next time we look up. This is easy to implement in recursion.
 
@@ -134,13 +147,15 @@ After path compression's 'optimization, the time complexity of Disjoint Set is q
 
 Some people may have a misunderstanding, thinking that after path compression and optimization, Disjoint Set is always a **star graph** (commonly known as a tree with only two layers). But in fact, since the path compression is only performed during the query, and only one path is compressed, the final structure of the Disjoint Set may still be relatively complicated. For example, now we have a more complex tree that needs to be merged with a single-element set:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr1.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr1.png"> </div>
 
 If we want to merge(7,8) at this time, if we can choose, should we set the parent node of 7 to 8, or set the parent node of 8 to 7?
 
 Of course it is the latter. Because if the parent node of 7 is set to 8, the **depth** of the tree (the length of the longest chain in the tree) will be deepened, and the distance from each element in the original tree to the root node will become longer. Then we look for the root node The path will be correspondingly longer. Although we have path compression, path compression also consumes time. On the contrary, Ssetting the parent node of 8 to 7 does not have this problem because it does not affect unrelated nodes.
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr2.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr2.png"> </div>
 
 This inspires us: we should merge simple trees into complex trees, not the other way around. Because after merging in this way, the number of nodes whose distance to the root node becomes longer is relatively small.
 
@@ -178,11 +193,13 @@ inline void merge(int i, int j)
 
 Why is the depth the same, but the depth of the new root node needs to be +1? As shown in the figure below, we have two trees with a depth of 2, and now we need to merge(2,5):
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr3.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr3.png"> </div>
 
 Here, the parent node of 2 is set to 5, or the parent node of 5 is set to 2, in fact, there is not much difference. We choose the former, so it becomes like this:
 
-![image](https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr4.png)
+<div align=center>
+<img src="https://github.com/ryan4waters/algo/blob/main/data%20structure/Disjoint%20Set/figures/mbr4.png"> </div>
 
 Obviously the depth of the tree is increased by 1. Another way of merging also increases the depth of the tree by +1.
 
